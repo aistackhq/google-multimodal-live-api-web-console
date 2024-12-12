@@ -21,3 +21,8 @@
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# disabled for bun
+package-lock.json
+yarn.lock
+pnpm-lock.yaml

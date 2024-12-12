@@ -14,13 +14,17 @@
  * limitations under the License.
  */
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { Settings, AlertTriangle, CheckCircle2 } from "lucide-react";
+
 import "./App.scss";
 import { LiveAPIProvider } from "./contexts/LiveAPIContext";
 import SidePanel from "./components/side-panel/SidePanel";
 import { Altair } from "./components/altair/Altair";
 import ControlTray from "./components/control-tray/ControlTray";
 import cn from "classnames";
+import { SettingsModal } from "./components/settings/Settings";
+import { useLocalStorage } from "./hooks/use-local-storage";
 
 const API_KEY = process.env.REACT_APP_GEMINI_API_KEY as string;
 if (typeof API_KEY !== "string") {
@@ -37,9 +41,66 @@ function App() {
   // either the screen capture, the video or null, if null we hide it
   const [videoStream, setVideoStream] = useState<MediaStream | null>(null);
 
+  const [apiKey, setApiKey] = useLocalStorage<string | null>('apiKey', '');
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const handleApiKeySubmit = (newApiKey: string) => {
+    setApiKey(newApiKey);
+  };
+
+  useEffect(() => {
+    if (!apiKey) {
+      setIsModalOpen(true);
+    }
+  }, [apiKey]);
+
   return (
     <div className="App">
-      <LiveAPIProvider url={uri} apiKey={API_KEY}>
+      <div style={{
+        padding: '1rem',
+        justifyContent: 'flex-end',
+        position: 'absolute',
+        top: 0,
+        right: 0
+      }}>
+          <button
+            onClick={() => setIsModalOpen(true)}
+            style={{
+              padding: '0.5rem',
+              position: 'absolute',
+              top: 0,
+              right: 0,
+              zIndex: 1000,
+              borderRadius: '9999px',
+              transition: 'background-color 0.2s'
+            }}
+            onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#e5e7eb'}
+            onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+          >
+          <Settings style={{ width: '1.5rem', height: '1.5rem', color: '#4b5563' }} />
+          {apiKey ? (
+            <CheckCircle2 style={{
+              width: '1rem',
+              height: '1rem',
+              color: '#22c55e',
+              position: 'absolute',
+              top: '-0.25rem',
+              right: '-0.25rem'
+            }} />
+          ) : (
+              <AlertTriangle style={{
+                width: '1rem',
+                height: '1rem',
+                color: '#eab308',
+                position: 'absolute',
+                top: '-0.25rem',
+                right: '-0.25rem'
+              }} />
+            )}
+          </button>
+        </div>
+      {apiKey ? <LiveAPIProvider url={uri} apiKey={apiKey}>
+       
         <div className="streaming-console">
           <SidePanel />
           <main>
@@ -65,7 +126,25 @@ function App() {
             </ControlTray>
           </main>
         </div>
-      </LiveAPIProvider>
+      </LiveAPIProvider>:<div style={{
+        display: 'flex',
+        alignItems: 'center', 
+        justifyContent: 'center',
+        height: '100vh',
+        color: 'white',
+        flexDirection: 'column',
+      }}>
+        <h1 style={{
+          fontSize: '2rem',
+          fontWeight: 'bold'
+          }}>No API Key</h1>
+        <p>Please enter an API Key to use this app.</p>
+      </div>}
+      <SettingsModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          onSubmit={handleApiKeySubmit}
+        />
     </div>
   );
 }
