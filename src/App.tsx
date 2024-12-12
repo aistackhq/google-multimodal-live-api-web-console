@@ -26,11 +26,6 @@ import cn from "classnames";
 import { SettingsModal } from "./components/settings/Settings";
 import { useLocalStorage } from "./hooks/use-local-storage";
 
-const API_KEY = process.env.REACT_APP_GEMINI_API_KEY as string;
-if (typeof API_KEY !== "string") {
-  throw new Error("set REACT_APP_GEMINI_APIK_KEY in .env");
-}
-
 const host = "generativelanguage.googleapis.com";
 const uri = `wss://${host}/ws/google.ai.generativelanguage.v1alpha.GenerativeService.BidiGenerateContent`;
 
